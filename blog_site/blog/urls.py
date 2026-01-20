@@ -12,4 +12,5 @@ urlpatterns = [
         ShowPost.as_view(),
         name='post_detail',
     ),
+    path('<int:post_id>/share/', post_share, name='post_share'),
 ]
