@@ -1,4 +1,5 @@
 {% extends 'blog/base.html' %}
+{% load morphy_tags %}
 
 {% block title %}{{ post.title }}{% endblock %}
 
@@ -13,4 +14,23 @@
             Отправить этот пост
         </a>
     </p>
+
+    {% with comments.count as total_comments %}
+        <h2>
+            Кол-во комментариев: {{ total_comments }}
+        </h2>
+    {% endwith %}
+
+    {%  for comment in comments %}
+        <div class="comment">
+            <p class="info">
+                Комментарий от {{ comment.name|inflect:"gent" }}
+                {{ comment.created }}
+            </p>
+            {{ comment.body|linebreaks }}
+        </div>
+    {% empty %}
+        <p>Нет комментариев к этому посту.</p>
+    {% endfor %}
+    {% include "blog/post/includes/comment_form.html" %}
 {% endblock %}

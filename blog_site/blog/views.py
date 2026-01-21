@@ -1,10 +1,11 @@
 from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_POST
 from django.views.generic import ListView, DetailView
 
-from .forms import EmailPostForm
-from .models import Post
+from .forms import EmailPostForm, CommentForm
+from .models import Post, Comment
 
 
 class PostListView(ListView):
@@ -31,6 +32,18 @@ class ShowPost(DetailView):
         )
 
         return post
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        comments = Comment.objects.filter(active=True)
+        form = CommentForm()
+        context.update({
+            'comments': comments,
+            'form': form,
+        })
+
+        return context
 
 
 def post_share(request, post_id):
@@ -72,5 +85,36 @@ def post_share(request, post_id):
             'post': post,
             'form': form,
             'sent': sent,
+        },
+    )
+
+
+@require_POST
+def post_comment(request, post_id):
+    post = get_object_or_404(
+        Post,
+        id=post_id,
+        status=Post.Status.PUBLISHED,
+    )
+
+    comment = None
+
+    # Комментарий отправлен
+    form = CommentForm(
+        data=request.POST,
+    )
+
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.save()
+
+    return render(
+        request,
+        'blog/post/comment.html',
+        {
+            'post': post,
+            'form': form,
+            'comment': comment,
         },
     )

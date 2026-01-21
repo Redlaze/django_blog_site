@@ -101,3 +101,45 @@ class Post(models.Model):
 
         # Ограничение длины, чтобы избежать слишком длинных слагов
         return slug[:50]
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(
+        to=Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Пост',
+    )
+    name = models.CharField(
+        max_length=250,
+        verbose_name='Имя',
+    )
+    email = models.EmailField(
+        verbose_name='E-mail',
+    )
+    body = models.TextField(
+        verbose_name='Содержание',
+    )
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания',
+    )
+    updated = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Дата обновления',
+    )
+    active = models.BooleanField(
+        default=True,
+        verbose_name='Опубликован',
+    )
+
+    class Meta:
+        verbose_name = 'Комментарии'
+        verbose_name_plural = 'Комментарии'
+        ordering = ('created',)
+        indexes = [
+            models.Index(fields=['created']),
+        ]
+
+    def __str__(self):
+        return f'Комментарий от {self.name} на пост {self.post}'
